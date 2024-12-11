@@ -2,8 +2,6 @@ package com.cyy.test.netty.c2;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
 
 import java.util.concurrent.TimeUnit;
 
@@ -13,7 +11,6 @@ import java.util.concurrent.TimeUnit;
  * @author: cyy
  * @create: 2024-12-10 20:33
  **/
-@Slf4j
 public class TestEventLoop {
     public static void main(String[] args) {
         // 1.创建一个EventLoop对象 构造函数参数为线程数 默认为cpu核数*2
