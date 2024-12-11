@@ -33,14 +33,13 @@ public class EventLoopServer {
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                                 ByteBuf buffer = (ByteBuf) msg;
-                                log.debug(buffer.toString(Charset.defaultCharset()));
                                 ctx.fireChannelRead(buffer); // 将消息传递给下一个handler
                             }
                         }).addLast(group, "handler2", new ChannelInboundHandlerAdapter(){
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                                 ByteBuf buffer = (ByteBuf) msg;
-                                log.debug(buffer.toString(Charset.defaultCharset()));
+                                System.out.println(buffer.toString(Charset.defaultCharset()));
                             }
                         });
                     }
