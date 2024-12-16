@@ -27,7 +27,6 @@ public class CloseFutureClient {
                 .handler(new ChannelInitializer<NioSocketChannel>() {
                     @Override
                     protected void initChannel(NioSocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
                         ch.pipeline().addLast(new StringEncoder());
                     }
                 })
