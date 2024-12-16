@@ -1,11 +1,16 @@
 package com.cyy.test.netty.c4;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -37,23 +42,17 @@ public class TestPipeline {
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                                 System.out.println(Thread.currentThread().getName() + "===1");
-                                super.channelRead(ctx, msg);
+                                ByteBuf byteBuf = (ByteBuf) msg;
+                                super.channelRead(ctx, byteBuf.toString(Charset.defaultCharset()));
                             }
                         });
                         pipeline.addLast("handler2", new ChannelInboundHandlerAdapter(){
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                                 System.out.println(Thread.currentThread().getName() + "===2");
-                                super.channelRead(ctx, msg);
-                            }
-                        });
-                        pipeline.addLast("handler3", new ChannelInboundHandlerAdapter(){
-                            @Override
-                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                System.out.println(Thread.currentThread().getName() + "===3");
-                                super.channelRead(ctx, msg);
-                                // 只有写，才能够触发出战handler
-                                ch.writeAndFlush(ctx.alloc().buffer().writeBytes("server...".getBytes()));
+                                Student student = new Student(msg.toString());
+                                // 将接收到的数据传递给下一个handler，等同于ctx.fireChannelRead(msg)，如果不传递，传递链会断开。
+                                super.channelRead(ctx, student);
                             }
                         });
                         pipeline.addLast("handler4", new ChannelOutboundHandlerAdapter() {
@@ -61,6 +60,17 @@ public class TestPipeline {
                             public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
                                 System.out.println(Thread.currentThread().getName() + "===4");
                                 super.write(ctx, msg, promise);
+                            }
+                        });
+                        pipeline.addLast("handler3", new ChannelInboundHandlerAdapter(){
+                            @Override
+                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                System.out.println(Thread.currentThread().getName() + "===3");
+                                System.out.println(msg.getClass() + ":" + msg.toString());
+                                super.channelRead(ctx, msg);
+                                // 只有写，才能够触发出战handler
+                                // ch.writeAndFlush(ctx.alloc().buffer().writeBytes("server...".getBytes())); // 从尾部找出栈handler
+                                ctx.write(ctx.alloc().buffer().writeBytes("server...".getBytes())); // 从当前位置向后查找出栈handler
                             }
                         });
                         pipeline.addLast("handler5", new ChannelOutboundHandlerAdapter() {
@@ -80,5 +90,11 @@ public class TestPipeline {
                     }
                 })
                 .bind(8080);
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class Student {
+        private String name;
     }
 }
