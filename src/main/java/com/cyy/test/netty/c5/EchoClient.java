@@ -56,6 +56,7 @@ public class EchoClient {
                     channel.writeAndFlush(str);
                 }
             }).start();
+            channel.closeFuture().sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
